@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FT EARN</title>
+<style>
+body{margin:0;background:linear-gradient(135deg,#080d2b,#25105c);color:white;font-family:Arial;text-align:center;padding:25px 15px}
+.card{max-width:400px;margin:35px auto;background:#1b2459;padding:25px;border-radius:22px}
+h1{color:#b69aff;font-size:34px}
+input{width:90%;padding:14px;margin:10px 0;border-radius:10px;border:0;font-size:16px}
+button{padding:14px 22px;border:0;border-radius:12px;background:linear-gradient(90deg,#246bfe,#8248e8);color:white;font-weight:bold;margin:8px}
+.small{color:#c5c8ed;font-size:13px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>FT EARN</h1>
+<p>Welcome to FT EARN 💙💜</p>
+
+<div id="login">
+<input id="phone" placeholder="+91 Mobile Number" type="tel">
+<div id="recaptcha"></div>
+<button id="send">Send OTP</button>
+<div id="otpbox" class="hidden">
+<input id="otp" placeholder="Enter 6 digit OTP">
+<button id="verify">Verify OTP</button>
+</div>
+<p id="status" class="small"></p>
+</div>
+
+<div id="dashboard" class="hidden">
+<h2>Welcome!</h2>
+<p id="user"></p>
+<h2>₹0.00</h2>
+<p class="small">Demo balance only. No real payouts connected.</p>
+<p>Task reward: ₹20 per verified task</p>
+<p>Referral reward: ₹50 (proposed)</p>
+<button id="logout">Logout</button>
+</div>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {getAuth,RecaptchaVerifier,signInWithPhoneNumber,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+const config={
+apiKey:"AIzaSyBhEVGDTCyyQ95h4ezWt0wbp8FOxjYDz9U",
+authDomain:"ft-earn-50454.firebaseapp.com",
+projectId:"ft-earn-50454",
+storageBucket:"ft-earn-50454.firebasestorage.app",
+messagingSenderId:"985368907345",
+appId:"1:985368907345:web:0fd877f06bdf3a348e7270"
+};
+
+const auth=getAuth(initializeApp(config));
+const $=id=>document.getElementById(id);
+let verifier,confirmation;
+
+$("send").onclick=async()=>{
+try{
+let phone=$("phone").value.trim().replace(/\s/g,"");
+if(!phone.startsWith("+")) phone="+91"+phone;
+if(!verifier) verifier=new RecaptchaVerifier(auth,"recaptcha",{size:"normal"});
+confirmation=await signInWithPhoneNumber(auth,phone,verifier);
+$("otpbox").classList.remove("hidden");
+$("status").textContent="OTP sent! Check your SMS.";
+}catch(e){$("status").textContent=e.message;}
+};
+
+$("verify").onclick=async()=>{
+try{
+await confirmation.confirm($("otp").value.trim());
+$("status").textContent="Login successful!";
+}catch(e){$("status").textContent=e.message;}
+};
+
+$("logout").onclick=()=>signOut(auth);
+
+onAuthStateChanged(auth,user=>{
+$("login").classList.toggle("hidden",!!user);
+$("dashboard").classList.toggle("hidden",!user);
+if(user)$("user").textContent=user.phoneNumber;
+});
+</script>
+</body>
+</html>
